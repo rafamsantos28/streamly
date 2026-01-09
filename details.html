@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Streamly+ | Detalhes</title>
+    <title>Detalhes | Streamly+</title>
     <style>
         .details-container {
             min-height: 100vh;
@@ -12,28 +12,47 @@
             background-position: center;
             display: flex;
             align-items: center;
-            padding: 0 10%;
+            padding: 0 8%;
             position: relative;
         }
 
+        /* Gradiente para garantir que o texto seja legível sobre a imagem */
         .details-container::before {
             content: "";
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to right, #040714 20%, transparent 90%);
+            background: linear-gradient(to right, #040714 30%, transparent 95%),
+                        linear-gradient(to top, #040714 10%, transparent 50%);
         }
 
         .content-box {
             position: relative;
             z-index: 2;
-            max-width: 600px;
+            max-width: 700px;
         }
 
         .movie-title {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 800;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .meta-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
             margin-bottom: 20px;
-            color: #ba852a; /* Teu dourado */
+            color: #a8a8a8;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .age-rating {
+            background: #31343e;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: white;
         }
 
         .btn-group {
@@ -45,24 +64,26 @@
         .btn-play {
             background-color: white;
             color: black;
-            padding: 12px 30px;
+            padding: 12px 35px;
             border: none;
             border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
+            font-size: 1rem;
+            transition: 0.2s;
         }
 
-        .btn-play:hover { background-color: #ccc; }
+        .btn-play:hover { background-color: #ba852a; color: white; }
 
         .btn-fav {
             background-color: rgba(0,0,0,0.6);
             color: white;
             border: 2px solid white;
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -70,7 +91,7 @@
         }
 
         .btn-fav.active {
-            background-color: #4e67b1; /* Teu azul */
+            background-color: #4e67b1;
             border-color: #4e67b1;
         }
 
@@ -78,6 +99,7 @@
             font-size: 1.2rem;
             line-height: 1.6;
             color: #f9f9f9;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -87,15 +109,24 @@
         <div class="logo" onclick="window.location.href='app.html'" style="cursor:pointer">Streamly+</div>
     </div>
 
-    <div id="loading" style="padding: 50px; text-align: center;">A carregar detalhes...</div>
+    <div id="loading" style="padding: 100px; text-align: center; font-size: 1.5rem;">A carregar...</div>
 
     <div id="movie-content" class="details-container" style="display: none;">
         <div class="content-box">
             <h1 id="m-title" class="movie-title"></h1>
+            
+            <div class="meta-info">
+                <span id="m-rating" class="age-rating"></span>
+                <span id="m-year"></span> • 
+                <span id="m-duration"></span> • 
+                <span id="m-genre"></span>
+            </div>
+
             <div class="btn-group">
-                <button id="btnPlay" class="btn-play">▶ Reproduzir</button>
+                <button id="btnPlay" class="btn-play">▶ ASSISTIR</button>
                 <button id="btnFav" class="btn-fav">+</button>
             </div>
+
             <p id="m-desc" class="description"></p>
         </div>
     </div>
@@ -107,9 +138,13 @@
         const urlParams = new URLSearchParams(window.location.search);
         const movieId = urlParams.get('id');
 
-        // Referências de Elementos
+        // Referências
         const mTitle = document.getElementById('m-title');
         const mDesc = document.getElementById('m-desc');
+        const mRating = document.getElementById('m-rating');
+        const mYear = document.getElementById('m-year');
+        const mDuration = document.getElementById('m-duration');
+        const mGenre = document.getElementById('m-genre');
         const mContent = document.getElementById('movie-content');
         const loading = document.getElementById('loading');
         const btnPlay = document.getElementById('btnPlay');
@@ -117,7 +152,6 @@
 
         let isFavorite = false;
 
-        // 1. Verificar se user está logado
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = "index.html";
@@ -126,23 +160,30 @@
             }
         });
 
-        // 2. Carregar dados do filme do Firestore
         async function loadMovieDetails(uid) {
             const movieRef = doc(db, "movies", movieId);
             const movieSnap = await getDoc(movieRef);
 
             if (movieSnap.exists()) {
-                const movieData = movieSnap.data();
-                mTitle.innerText = movieData.title;
-                mDesc.innerText = movieData.description;
-                mContent.style.backgroundImage = `url('${movieData.banner}')`;
+                const data = movieSnap.data();
                 
-                // Botão Play -> Direciona para o player com o ID do Vimeo guardado no Firestore
+                // Mapeamento dos novos campos que criaste no Firestore
+                mTitle.innerText = data.Título;
+                mDesc.innerText = data.Sinopse;
+                mGenre.innerText = data.Género;
+                mRating.innerText = data["Classificação etária"]; // Usa parênteses retos por causa do espaço
+                mDuration.innerText = data.Duração;
+                mYear.innerText = data.Estreia;
+                
+                // Imagem de fundo (Banner)
+                mContent.style.backgroundImage = `url('${data.Banner}')`;
+                
+                // Botão Play (VimeoID)
                 btnPlay.onclick = () => {
-                    window.location.href = `player.html?v=${movieData.vimeoId}`;
+                    window.location.href = `player.html?v=${data.VimeoID}`;
                 };
 
-                // Lógica de Favoritos em tempo real
+                // Lógica de Favoritos (se tens a coleção 'users' configurada)
                 const userRef = doc(db, "users", uid);
                 onSnapshot(userRef, (doc) => {
                     const favorites = doc.data()?.favorites || [];
@@ -156,11 +197,10 @@
                 loading.style.display = 'none';
                 mContent.style.display = 'flex';
             } else {
-                alert("Filme não encontrado.");
+                alert("Filme não encontrado!");
             }
         }
 
-        // 3. Função para Adicionar/Remover favoritos
         async function toggleFavorite(uid) {
             const userRef = doc(db, "users", uid);
             if (!isFavorite) {
