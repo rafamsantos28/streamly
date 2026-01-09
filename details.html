@@ -202,14 +202,62 @@
             }
         }
 
-        async function toggleFavorite(uid) {
-            const userRef = doc(db, "users", uid);
-            if (!isFavorite) {
-                await updateDoc(userRef, { favorites: arrayUnion(movieId) });
-            } else {
-                await updateDoc(userRef, { favorites: arrayRemove(movieId) });
+        async function loadMovieDetails(uid) {
+    try {
+        console.log("A tentar carregar o filme com ID:", movieId);
+        const movieRef = doc(db, "movies", movieId);
+        const movieSnap = await getDoc(movieRef);
+
+        if (movieSnap.exists()) {
+            const data = movieSnap.data();
+            console.log("Dados recebidos do Firebase:", data);
+
+            // Usar o operador ?. evita que o código pare se um campo estiver em falta
+            mTitle.innerText = data.Título || "Sem Título";
+            mDesc.innerText = data.Sinopse || "Sem Sinopse";
+            mGenre.innerText = data.Género || "";
+            mRating.innerText = data["Classificação etária"] || "";
+            mDuration.innerText = data.Duração || "";
+            mYear.innerText = data.Estreia || "";
+            
+            if(data.Banner) {
+                mContent.style.backgroundImage = `url('${data.Banner}')`;
             }
+            
+            btnPlay.onclick = () => {
+                if(data.VimeoID) {
+                    window.location.href = `player.html?v=${data.VimeoID}`;
+                } else {
+                    alert("ID do vídeo não configurado.");
+                }
+            };
+
+            // Lógica de Favoritos
+            const userRef = doc(db, "users", uid);
+            onSnapshot(userRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const favorites = docSnap.data().favorites || [];
+                    isFavorite = favorites.includes(movieId);
+                    btnFav.innerText = isFavorite ? "✓" : "+";
+                    btnFav.classList.toggle('active', isFavorite);
+                }
+            });
+
+            btnFav.onclick = () => toggleFavorite(uid);
+
+            // Mostrar o conteúdo e esconder o loading
+            loading.style.display = 'none';
+            mContent.style.display = 'flex';
+
+        } else {
+            console.error("Documento não existe no Firestore!");
+            loading.innerText = "Erro: Filme não encontrado no banco de dados.";
         }
+    } catch (error) {
+        console.error("Erro ao carregar detalhes:", error);
+        loading.innerText = "Erro técnico ao carregar os dados.";
+    }
+}
     </script>
 </body>
 </html>
