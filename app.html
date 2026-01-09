@@ -1,28 +1,175 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Início | Streamly+</title>
+    <style>
+        /* Estilos específicos da página de catálogo */
+        .page-title {
+            font-size: clamp(1.8rem, 5vw, 2.5rem); /* Título responsivo */
+            padding: 30px 50px 10px;
+            font-weight: 800;
+            color: #f9f9f9;
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Grelha responsiva */
+            gap: 20px;
+            padding: 20px 50px 50px;
+        }
+
+        .movie-card {
+            border: 3px solid transparent;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: 0.3s;
+            cursor: pointer;
+            position: relative;
+            background-color: #1a1d29; /* Cor de fundo para cards sem imagem */
+            min-height: 280px; /* Altura mínima para cards */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* Título no fundo */
+        }
+
+        .movie-card:hover {
+            border-color: #4e67b1;
+            transform: scale(1.05); /* Efeito suave ao passar o rato */
+            box-shadow: 0px 10px 20px rgba(0,0,0,0.5);
+            z-index: 10; /* Para que o card sobreponha outros ao escalar */
+        }
+
+        .movie-card img { 
+            width: 100%; 
+            height: 100%; /* Preencher o cartão */
+            object-fit: cover; /* Ajustar a imagem sem distorcer */
+            display: block; 
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 1;
+        }
+
+        .movie-card-title {
+            position: relative; /* Para ficar por cima da imagem */
+            z-index: 2;
+            padding: 10px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Responsividade para grelha */
+        @media (max-width: 768px) {
+            .movie-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+                padding: 20px 20px 40px;
+            }
+            .page-title { padding: 20px 20px 10px; }
+            .movie-card { min-height: 220px; }
+        }
+
+        @media (max-width: 480px) {
+            .movie-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+                padding: 15px;
+            }
+            .navbar { padding: 10px 15px; }
+            .logo { font-size: 20px; }
+            .btn-logout { font-size: 0.8rem; padding: 8px 15px; }
+            .movie-card-title { font-size: 0.8rem; padding: 8px; }
+        }
+    </style>
 </head>
 <body>
+
     <div class="navbar">
         <div class="logo">Streamly+</div>
-        <button id="btnLogout" style="background:none; border:none; color:white; cursor:pointer;">Terminar sessão</button>
+        <button id="btnLogout" class="btn-primary">Terminar sessão</button>
     </div>
 
-    <h2 style="padding-left: 50px;">Filmes para Ti</h2>
+    <h2 class="page-title">Continua a Ver</h2>
+    <div class="movie-grid" id="movie-grid-continue">
+        <div style="grid-column: 1 / -1; text-align: center; color: #a8a8a8;" id="no-continue-watching">
+            Nenhum filme a continuar.
+        </div>
+    </div>
+
+    <h2 class="page-title">Filmes Populares</h2>
     <div class="movie-grid" id="movie-grid">
-        <div class="movie-card" onclick="window.location.href='details.html?id=otelefonenegro'">
-            <img src="https://via.placeholder.com/300x450" alt="O Telefone Negro">
+        <div style="grid-column: 1 / -1; text-align: center; color: #a8a8a8;" id="loading-movies">
+            A carregar filmes...
         </div>
     </div>
 
     <script type="module">
-        import { auth } from './firebase-config.js';
+        import { auth, db } from './firebase-config.js';
+        import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Redireciona se o utilizador não estiver logado
         auth.onAuthStateChanged(user => {
-            if (!user) window.location.href = "index.html";
+            if (!user) {
+                window.location.href = "index.html";
+            } else {
+                loadMovies();
+            }
         });
+
+        // Botão Sair
+        document.getElementById('btnLogout').onclick = () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            }).catch((error) => {
+                alert("Erro ao sair: " + error.message);
+            });
+        };
+
+        async function loadMovies() {
+            const movieGrid = document.getElementById('movie-grid');
+            const loadingMessage = document.getElementById('loading-movies');
+            movieGrid.innerHTML = ''; // Limpa a mensagem de "A carregar"
+
+            try {
+                // Obter todos os filmes da coleção 'movies'
+                const moviesCol = collection(db, "movies");
+                // Opcional: ordenar por Título (ou por outro campo que aches melhor)
+                const q = query(moviesCol, orderBy("Título", "asc")); 
+                const movieSnapshot = await getDocs(q);
+
+                if (movieSnapshot.empty) {
+                    movieGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #a8a8a8;">Nenhum filme disponível ainda.</div>';
+                } else {
+                    movieSnapshot.forEach(doc => {
+                        const movieData = doc.data();
+                        const movieId = doc.id; // O ID do documento é o ID do filme
+
+                        const card = document.createElement('div');
+                        card.className = 'movie-card';
+                        card.onclick = () => {
+                            window.location.href = `details.html?id=${movieId}`;
+                        };
+
+                        // Se tiver banner, usa-o, senão, mostra um fundo placeholder
+                        const imageUrl = movieData.Banner || 'https://via.placeholder.com/300x450/1a1d29/FFFFFF?text=Streamly+Filme';
+                        card.innerHTML = `
+                            <img src="${imageUrl}" alt="${movieData.Título || 'Filme'}">
+                            <div class="movie-card-title">${movieData.Título || 'Sem Título'}</div>
+                        `;
+                        movieGrid.appendChild(card);
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao carregar filmes:", error);
+                movieGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: red;">Erro ao carregar filmes. Recarrega ou tenta novamente mais tarde.</div>';
+            }
+        }
     </script>
 </body>
 </html>
