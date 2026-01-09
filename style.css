@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600;800&display=swap');
+
+body {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #040714; /* Fundo escuro padrão Disney */
+    color: white;
+}
+
+.navbar {
+    background-color: #4e67b1;
+    padding: 15px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-weight: 800;
+    font-size: 24px;
+    color: #ba852a;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.btn-primary {
+    background-color: #ba852a;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #966b22;
+    transform: scale(1.05);
+}
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 50px;
+}
+
+.movie-card {
+    border: 3px solid transparent;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.movie-card:hover {
+    border-color: #4e67b1;
+    transform: scale(1.1);
+    box-shadow: 0px 10px 20px rgba(0,0,0,0.5);
+}
+
+.movie-card img { width: 100%; display: block; }
+
+/* Player Fullscreen */
+.player-container {
+    width: 100vw;
+    height: 100vh;
+    background: black;
+}
