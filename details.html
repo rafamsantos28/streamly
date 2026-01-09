@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Streamly+ | Detalhes</title>
+    <style>
+        .details-container {
+            min-height: 100vh;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding: 0 10%;
+            position: relative;
+        }
+
+        .details-container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to right, #040714 20%, transparent 90%);
+        }
+
+        .content-box {
+            position: relative;
+            z-index: 2;
+            max-width: 600px;
+        }
+
+        .movie-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: #ba852a; /* Teu dourado */
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn-play {
+            background-color: white;
+            color: black;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-play:hover { background-color: #ccc; }
+
+        .btn-fav {
+            background-color: rgba(0,0,0,0.6);
+            color: white;
+            border: 2px solid white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-fav.active {
+            background-color: #4e67b1; /* Teu azul */
+            border-color: #4e67b1;
+        }
+
+        .description {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo" onclick="window.location.href='app.html'" style="cursor:pointer">Streamly+</div>
+    </div>
+
+    <div id="loading" style="padding: 50px; text-align: center;">A carregar detalhes...</div>
+
+    <div id="movie-content" class="details-container" style="display: none;">
+        <div class="content-box">
+            <h1 id="m-title" class="movie-title"></h1>
+            <div class="btn-group">
+                <button id="btnPlay" class="btn-play">▶ Reproduzir</button>
+                <button id="btnFav" class="btn-fav">+</button>
+            </div>
+            <p id="m-desc" class="description"></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, auth } from './firebase-config.js';
+        import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const movieId = urlParams.get('id');
+
+        // Referências de Elementos
+        const mTitle = document.getElementById('m-title');
+        const mDesc = document.getElementById('m-desc');
+        const mContent = document.getElementById('movie-content');
+        const loading = document.getElementById('loading');
+        const btnPlay = document.getElementById('btnPlay');
+        const btnFav = document.getElementById('btnFav');
+
+        let isFavorite = false;
+
+        // 1. Verificar se user está logado
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = "index.html";
+            } else {
+                loadMovieDetails(user.uid);
+            }
+        });
+
+        // 2. Carregar dados do filme do Firestore
+        async function loadMovieDetails(uid) {
+            const movieRef = doc(db, "movies", movieId);
+            const movieSnap = await getDoc(movieRef);
+
+            if (movieSnap.exists()) {
+                const movieData = movieSnap.data();
+                mTitle.innerText = movieData.title;
+                mDesc.innerText = movieData.description;
+                mContent.style.backgroundImage = `url('${movieData.banner}')`;
+                
+                // Botão Play -> Direciona para o player com o ID do Vimeo guardado no Firestore
+                btnPlay.onclick = () => {
+                    window.location.href = `player.html?v=${movieData.vimeoId}`;
+                };
+
+                // Lógica de Favoritos em tempo real
+                const userRef = doc(db, "users", uid);
+                onSnapshot(userRef, (doc) => {
+                    const favorites = doc.data()?.favorites || [];
+                    isFavorite = favorites.includes(movieId);
+                    btnFav.innerText = isFavorite ? "✓" : "+";
+                    btnFav.classList.toggle('active', isFavorite);
+                });
+
+                btnFav.onclick = () => toggleFavorite(uid);
+
+                loading.style.display = 'none';
+                mContent.style.display = 'flex';
+            } else {
+                alert("Filme não encontrado.");
+            }
+        }
+
+        // 3. Função para Adicionar/Remover favoritos
+        async function toggleFavorite(uid) {
+            const userRef = doc(db, "users", uid);
+            if (!isFavorite) {
+                await updateDoc(userRef, { favorites: arrayUnion(movieId) });
+            } else {
+                await updateDoc(userRef, { favorites: arrayRemove(movieId) });
+            }
+        }
+    </script>
+</body>
+</html>
