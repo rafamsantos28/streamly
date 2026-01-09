@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="stylesheet" href="style.css">
     <title>Detalhes | Streamly+</title>
     <style>
@@ -13,69 +12,74 @@
             background-position: center;
             display: flex;
             align-items: center;
-            padding: 0 8%;
+            padding: 0 5%;
             position: relative;
+            box-sizing: border-box;
         }
 
-        /* Gradiente para garantir que o texto seja legível sobre a imagem */
         .details-container::before {
             content: "";
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(to right, #040714 30%, transparent 95%),
-                        linear-gradient(to top, #040714 10%, transparent 50%);
+                        linear-gradient(to top, #040714 20%, transparent 60%);
         }
 
         .content-box {
             position: relative;
             z-index: 2;
-            max-width: 700px;
+            max-width: 800px;
+            padding-top: 80px; /* Espaço para a navbar */
+            padding-bottom: 50px;
         }
 
         .movie-title {
-            font-size: 3.5rem;
+            font-size: clamp(2rem, 10vw, 4rem);
             font-weight: 800;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            line-height: 1.1;
             color: #fff;
         }
 
         .meta-info {
             display: flex;
-            gap: 15px;
+            flex-wrap: wrap; /* Permite que os itens quebrem linha em telemóveis */
+            gap: 10px;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: #a8a8a8;
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-size: clamp(0.8rem, 2vw, 1rem);
         }
 
         .age-rating {
             background: #31343e;
-            padding: 2px 8px;
+            padding: 2px 10px;
             border-radius: 4px;
             color: white;
+            font-weight: bold;
         }
 
         .btn-group {
             display: flex;
             gap: 15px;
             margin-bottom: 30px;
+            align-items: center;
         }
 
         .btn-play {
             background-color: white;
             color: black;
-            padding: 12px 35px;
+            padding: 12px 40px;
             border: none;
             border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
             font-size: 1rem;
-            transition: 0.2s;
+            transition: 0.3s;
         }
 
-        .btn-play:hover { background-color: #ba852a; color: white; }
+        .btn-play:hover { background-color: #ba852a; color: white; transform: scale(1.05); }
 
         .btn-fav {
             background-color: rgba(0,0,0,0.6);
@@ -89,45 +93,54 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: 0.3s;
         }
 
-        .btn-fav.active {
-            background-color: #4e67b1;
-            border-color: #4e67b1;
-        }
+        .btn-fav.active { background-color: #4e67b1; border-color: #4e67b1; }
 
         .description {
-            font-size: 1.2rem;
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
             line-height: 1.6;
             color: #f9f9f9;
-            margin-top: 20px;
+            max-width: 650px;
+        }
+
+        /* Ajustes para ecrãs pequenos (Telemóveis) */
+        @media (max-width: 600px) {
+            .details-container {
+                align-items: flex-end; /* Texto no fundo em ecrãs pequenos */
+                text-align: center;
+                padding-bottom: 40px;
+            }
+            .details-container::before {
+                background: linear-gradient(to top, #040714 60%, transparent 100%);
+            }
+            .meta-info { justify-content: center; }
+            .btn-group { justify-content: center; }
+            .content-box { padding-top: 100px; }
         }
     </style>
 </head>
 <body>
-
-    <div class="navbar">
+    <div class="navbar" style="position: fixed; width: 100%; z-index: 100; top: 0; left: 0;">
         <div class="logo" onclick="window.location.href='app.html'" style="cursor:pointer">Streamly+</div>
     </div>
 
-    <div id="loading" style="padding: 100px; text-align: center; font-size: 1.5rem;">A carregar...</div>
+    <div id="loading" style="height: 100vh; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+        A carregar detalhes...
+    </div>
 
     <div id="movie-content" class="details-container" style="display: none;">
         <div class="content-box">
             <h1 id="m-title" class="movie-title"></h1>
-            
             <div class="meta-info">
                 <span id="m-rating" class="age-rating"></span>
-                <span id="m-year"></span> • 
-                <span id="m-duration"></span> • 
-                <span id="m-genre"></span>
+                <span id="m-year"></span> • <span id="m-duration"></span> • <span id="m-genre"></span>
             </div>
-
             <div class="btn-group">
                 <button id="btnPlay" class="btn-play">▶ Reproduzir</button>
                 <button id="btnFav" class="btn-fav">+</button>
             </div>
-
             <p id="m-desc" class="description"></p>
         </div>
     </div>
@@ -139,7 +152,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const movieId = urlParams.get('id');
 
-        // Referências
         const mTitle = document.getElementById('m-title');
         const mDesc = document.getElementById('m-desc');
         const mRating = document.getElementById('m-rating');
@@ -154,11 +166,8 @@
         let isFavorite = false;
 
         auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = "index.html";
-            } else {
-                loadMovieDetails(user.uid);
-            }
+            if (!user) window.location.href = "index.html";
+            else loadMovieDetails(user.uid);
         });
 
         async function loadMovieDetails(uid) {
@@ -167,97 +176,40 @@
 
             if (movieSnap.exists()) {
                 const data = movieSnap.data();
-                
-                // Mapeamento dos novos campos que criaste no Firestore
                 mTitle.innerText = data.Título;
                 mDesc.innerText = data.Sinopse;
                 mGenre.innerText = data.Género;
-                mRating.innerText = data["Classificação etária"]; // Usa parênteses retos por causa do espaço
+                mRating.innerText = data["Classificação etária"];
                 mDuration.innerText = data.Duração;
                 mYear.innerText = data.Estreia;
-                
-                // Imagem de fundo (Banner)
                 mContent.style.backgroundImage = `url('${data.Banner}')`;
                 
-                // Botão Play (VimeoID)
-                btnPlay.onclick = () => {
-                    window.location.href = `player.html?v=${data.VimeoID}`;
-                };
+                btnPlay.onclick = () => window.location.href = `player.html?v=${data.VimeoID}`;
 
-                // Lógica de Favoritos (se tens a coleção 'users' configurada)
                 const userRef = doc(db, "users", uid);
-                onSnapshot(userRef, (doc) => {
-                    const favorites = doc.data()?.favorites || [];
-                    isFavorite = favorites.includes(movieId);
-                    btnFav.innerText = isFavorite ? "✓" : "+";
-                    btnFav.classList.toggle('active', isFavorite);
+                onSnapshot(userRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const favorites = docSnap.data().favorites || [];
+                        isFavorite = favorites.includes(movieId);
+                        btnFav.innerText = isFavorite ? "✓" : "+";
+                        btnFav.classList.toggle('active', isFavorite);
+                    }
                 });
 
                 btnFav.onclick = () => toggleFavorite(uid);
-
                 loading.style.display = 'none';
                 mContent.style.display = 'flex';
             } else {
                 alert("Filme não encontrado!");
+                window.location.href = "app.html";
             }
         }
 
-        async function loadMovieDetails(uid) {
-    try {
-        console.log("A tentar carregar o filme com ID:", movieId);
-        const movieRef = doc(db, "movies", movieId);
-        const movieSnap = await getDoc(movieRef);
-
-        if (movieSnap.exists()) {
-            const data = movieSnap.data();
-            console.log("Dados recebidos do Firebase:", data);
-
-            // Usar o operador ?. evita que o código pare se um campo estiver em falta
-            mTitle.innerText = data.Título || "Sem Título";
-            mDesc.innerText = data.Sinopse || "Sem Sinopse";
-            mGenre.innerText = data.Género || "";
-            mRating.innerText = data["Classificação etária"] || "";
-            mDuration.innerText = data.Duração || "";
-            mYear.innerText = data.Estreia || "";
-            
-            if(data.Banner) {
-                mContent.style.backgroundImage = `url('${data.Banner}')`;
-            }
-            
-            btnPlay.onclick = () => {
-                if(data.VimeoID) {
-                    window.location.href = `player.html?v=${data.VimeoID}`;
-                } else {
-                    alert("ID do vídeo não configurado.");
-                }
-            };
-
-            // Lógica de Favoritos
+        async function toggleFavorite(uid) {
             const userRef = doc(db, "users", uid);
-            onSnapshot(userRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const favorites = docSnap.data().favorites || [];
-                    isFavorite = favorites.includes(movieId);
-                    btnFav.innerText = isFavorite ? "✓" : "+";
-                    btnFav.classList.toggle('active', isFavorite);
-                }
-            });
-
-            btnFav.onclick = () => toggleFavorite(uid);
-
-            // Mostrar o conteúdo e esconder o loading
-            loading.style.display = 'none';
-            mContent.style.display = 'flex';
-
-        } else {
-            console.error("Documento não existe no Firestore!");
-            loading.innerText = "Erro: Filme não encontrado no banco de dados.";
+            if (!isFavorite) await updateDoc(userRef, { favorites: arrayUnion(movieId) });
+            else await updateDoc(userRef, { favorites: arrayRemove(movieId) });
         }
-    } catch (error) {
-        console.error("Erro ao carregar detalhes:", error);
-        loading.innerText = "Erro técnico ao carregar os dados.";
-    }
-}
     </script>
 </body>
 </html>
