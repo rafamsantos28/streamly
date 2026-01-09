@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <link rel="stylesheet" href="style.css">
+    <title>Streamly+ | Início</title>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">Streamly+</div>
+        <button id="btnLogout" style="background:none; border:none; color:white; cursor:pointer;">Sair</button>
+    </div>
+
+    <h2 style="padding-left: 50px;">Filmes para Ti</h2>
+    <div class="movie-grid" id="movie-grid">
+        <div class="movie-card" onclick="window.location.href='details.html?id=filme1'">
+            <img src="https://via.placeholder.com/300x450" alt="Filme">
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth } from './firebase-config.js';
+        auth.onAuthStateChanged(user => {
+            if (!user) window.location.href = "index.html";
+        });
+    </script>
+</body>
+</html>
