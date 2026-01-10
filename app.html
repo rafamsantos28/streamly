@@ -140,7 +140,7 @@
                 // Obter todos os filmes da coleção 'movies'
                 const moviesCol = collection(db, "movies");
                 // Opcional: ordenar por Título (ou por outro campo que aches melhor)
-                const q = query(moviesCol, orderBy("Título", "asc")); 
+                const q = query(moviesCol); 
                 const movieSnapshot = await getDocs(q);
 
                 if (movieSnapshot.empty) {
