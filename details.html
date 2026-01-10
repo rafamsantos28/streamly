@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streamly+ | Detalhes</title>
+    <title>Detalhes | Streamly+</title>
     <link rel="stylesheet" href="style.css">
     <style>
         /* Estilos do Modal do Trailer */
@@ -11,14 +11,14 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
+            background: rgba(0,0,0,0.98); /* Fundo mais escuro para o filme */
             z-index: 1000;
             justify-content: center;
             align-items: center;
         }
         .trailer-content {
             width: 90%;
-            max-width: 1000px;
+            max-width: 1100px;
             aspect-ratio: 16 / 9;
             background: #000;
             position: relative;
@@ -32,6 +32,20 @@
             transition: 0.3s;
         }
         .close-modal:hover { color: #e50914; }
+
+        /* Seta de Voltar */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 40px;
+            text-decoration: none;
+            z-index: 10;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .back-button:hover { transform: scale(1.2); }
 
         /* Ajuste do fundo dinâmico */
         .details-bg {
@@ -66,6 +80,8 @@
     </style>
 </head>
 <body>
+
+    <a href="app.html" class="back-button">←</a>
 
     <div id="movieBackground" class="details-bg"></div>
 
@@ -125,20 +141,14 @@
                     currentMovieData = docSnap.data();
                     const nomeFilme = currentMovieData.Título || currentMovieData.Titulo || "Filme";
 
-                    // 1. PERSONALIZAÇÃO DO NOME NO BROWSER
                     document.title = `${nomeFilme} | Streamly+`; 
                     
-                    // 2. PREENCHIMENTO DOS DADOS NA PÁGINA
                     movieTitle.innerText = nomeFilme;
                     movieDesc.innerText = currentMovieData.Sinopse || "Sem sinopse disponível.";
                     movieBG.style.backgroundImage = `url('${currentMovieData.Banner}')`;
                     
                     statusMsg.style.display = 'none';
                     movieInfo.style.display = 'block';
-
-                    document.getElementById('playBtn').onclick = () => {
-                        window.location.href = `player.html?id=${movieId}`;
-                    };
 
                     checkFavoriteStatus();
                 } else {
@@ -149,6 +159,28 @@
                 statusMsg.innerText = "Erro ao carregar detalhes do conteúdo.";
             }
         }
+
+        // --- FUNÇÃO UNIFICADA PARA PLAYER (FILME OU TRAILER) ---
+        function openPlayer(videoID) {
+            if (!videoID) return alert("Vídeo não disponível.");
+            const playerDiv = document.getElementById('trailerPlayer');
+            playerDiv.innerHTML = `
+                <iframe 
+                    src="https://player.vimeo.com/video/${videoID}?autoplay=1&muted=0" 
+                    width="100%" height="100%" frameborder="0" 
+                    allow="autoplay; fullscreen" allowfullscreen>
+                </iframe>
+            `;
+            document.getElementById('trailerModal').style.display = 'flex';
+        }
+
+        document.getElementById('playBtn').onclick = () => openPlayer(currentMovieData.VimeoID);
+        document.getElementById('trailerBtn').onclick = () => openPlayer(currentMovieData.TrailerID);
+
+        document.getElementById('closeTrailer').onclick = () => {
+            document.getElementById('trailerPlayer').innerHTML = ''; 
+            document.getElementById('trailerModal').style.display = 'none';
+        };
 
         // --- FAVORITOS ---
         async function checkFavoriteStatus() {
@@ -180,32 +212,6 @@
                 await updateDoc(userRef, { favorites: arrayUnion(movieId) });
                 favBtn.innerText = "✓";
             }
-        };
-
-        // --- TRAILER COM SOM AUTOMÁTICO ---
-        document.getElementById('trailerBtn').onclick = () => {
-            const trailerId = currentMovieData.TrailerID;
-            if (!trailerId) return alert("Trailer não disponível.");
-
-            const playerDiv = document.getElementById('trailerPlayer');
-            
-            // Injeção do iframe com parâmetros de som e autoplay
-            playerDiv.innerHTML = `
-                <iframe 
-                    src="https://player.vimeo.com/video/${trailerId}?autoplay=1&muted=0" 
-                    width="100%" 
-                    height="100%" 
-                    frameborder="0" 
-                    allow="autoplay; fullscreen" 
-                    allowfullscreen>
-                </iframe>
-            `;
-            document.getElementById('trailerModal').style.display = 'flex';
-        };
-
-        document.getElementById('closeTrailer').onclick = () => {
-            document.getElementById('trailerPlayer').innerHTML = ''; 
-            document.getElementById('trailerModal').style.display = 'none';
         };
 
         loadMovieDetails();
