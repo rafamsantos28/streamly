@@ -160,47 +160,62 @@
             }
         }
 
-        // --- FUNÇÃO UNIFICADA PARA PLAYER COM FULLSCREEN AUTOMÁTICO ---
-function openPlayer(videoID) {
-    if (!videoID) return alert("Vídeo não disponível.");
+        // --- FUNÇÃO UNIFICADA PARA PLAYER COM FULLSCREEN ---
+    function openPlayer(videoID) {
+    if (!videoID) {
+        alert("Vídeo não disponível.");
+        return;
+    }
     
     const modal = document.getElementById('trailerModal');
     const playerDiv = document.getElementById('trailerPlayer');
     
-    // Injetamos o iframe
+    // 1. Injetamos o iframe (Garantindo allow="autoplay; fullscreen")
     playerDiv.innerHTML = `
         <iframe 
             id="vimeoIframe"
             src="https://player.vimeo.com/video/${videoID}?autoplay=1&muted=0" 
-            width="100%" height="100%" frameborder="0" 
-            allow="autoplay; fullscreen" allowfullscreen>
+            style="width:100%; height:100%;" 
+            frameborder="0" 
+            allow="autoplay; fullscreen" 
+            allowfullscreen>
         </iframe>
     `;
     
-    // Exibimos o modal
+    // 2. Mostramos o modal
     modal.style.display = 'flex';
 
-    // Tenta colocar o modal em Fullscreen (funciona melhor após interação do user)
-    if (modal.requestFullscreen) {
-        modal.requestFullscreen();
-    } else if (modal.webkitRequestFullscreen) { /* Safari/iOS */
+    // 3. Disparamos o Fullscreen no Modal
+        if (modal.requestFullscreen) {
+        modal.requestFullscreen().catch(err => console.log("Erro fullscreen:", err));
+        } else if (modal.webkitRequestFullscreen) { /* Safari / iOS */
         modal.webkitRequestFullscreen();
-    } else if (modal.msRequestFullscreen) { /* IE11 */
-        modal.msRequestFullscreen();
+        }
     }
-}
 
-// --- AJUSTE NO BOTÃO FECHAR PARA SAIR DO FULLSCREEN ---
-document.getElementById('closeTrailer').onclick = () => {
-    if (document.fullscreenElement) {
-        document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) { /* Safari */
-        document.webkitExitFullscreen();
-    }
+    // --- CONFIGURAÇÃO DOS EVENTOS DE CLIQUE ---
+    document.getElementById('playBtn').onclick = function() {
+        openPlayer(currentMovieData.VimeoID);
+    };
+
+    document.getElementById('trailerBtn').onclick = function() {
+        openPlayer(currentMovieData.TrailerID);
+    };
+
+    // --- SAÍDA LIMPA ---
+    document.getElementById('closeTrailer').onclick = function() {
+          if (document.fullscreenElement || document.webkitFullscreenElement) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
     
     document.getElementById('trailerPlayer').innerHTML = ''; 
     document.getElementById('trailerModal').style.display = 'none';
-};
+    };
+        
 
         // --- FAVORITOS ---
         async function checkFavoriteStatus() {
