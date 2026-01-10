@@ -68,3 +68,25 @@ body {
     height: 100vh;
     background: black;
 }
+
+.trailer-content {
+    width: 80%;
+    max-width: 900px;
+    aspect-ratio: 16 / 9; /* Mantém o formato de cinema */
+    background: #000;
+    position: relative;
+}
+
+#trailerPlayer {
+    width: 100%;
+    height: 100%;
+}
+
+.close-modal {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+}
