@@ -3,246 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-    <link rel="stylesheet" href="style.css">
     <title>Início | Streamly+</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        /* Estilos específicos da página de catálogo */
-        .page-title {
-            font-size: clamp(1.8rem, 5vw, 2.5rem); /* Título responsivo */
-            padding: 30px 50px 10px;
-            font-weight: 800;
-            color: #f9f9f9;
+        /* Estilos rápidos para a Barra de Pesquisa e Secções */
+        .search-container {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
         }
-
+        #searchInput {
+            width: 100%;
+            max-width: 500px;
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: none;
+            background: #222;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            border: 1px solid #444;
+        }
+        #searchInput:focus {
+            border-color: #e50914;
+        }
+        .section-title {
+            margin: 20px 4%;
+            font-size: 1.5rem;
+            color: #fff;
+        }
         .movie-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Grelha responsiva */
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 20px;
-            padding: 20px 50px 50px;
+            padding: 0 4% 40px 4%;
         }
-
         .movie-card {
-            border: 3px solid transparent;
-            border-radius: 10px;
-            overflow: hidden;
-            transition: 0.3s;
             cursor: pointer;
+            transition: transform 0.3s;
             position: relative;
-            background-color: #1a1d29; /* Cor de fundo para cards sem imagem */
-            min-height: 280px; /* Altura mínima para cards */
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end; /* Título no fundo */
+            border-radius: 8px;
+            overflow: hidden;
         }
-
         .movie-card:hover {
-            border-color: #4e67b1;
-            transform: scale(1.05); /* Efeito suave ao passar o rato */
-            box-shadow: 0px 10px 20px rgba(0,0,0,0.5);
-            z-index: 10; /* Para que o card sobreponha outros ao escalar */
-        }
-
-        .movie-card img { 
-            width: 100%; 
-            height: 100%; /* Preencher o cartão */
-            object-fit: cover; /* Ajustar a imagem sem distorcer */
-            display: block; 
-            position: absolute;
-            top: 0; left: 0;
-            z-index: 1;
-        }
-
-        .movie-card-title {
-            position: relative; /* Para ficar por cima da imagem */
+            transform: scale(1.05);
             z-index: 2;
-            padding: 10px;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            color: white;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-align: center;
         }
-
-        /* Responsividade para grelha */
-        @media (max-width: 768px) {
-            .movie-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 15px;
-                padding: 20px 20px 40px;
-            }
-            .page-title { padding: 20px 20px 10px; }
-            .movie-card { min-height: 220px; }
-        }
-
-        @media (max-width: 480px) {
-            .movie-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-                gap: 10px;
-                padding: 15px;
-            }
-            .navbar { padding: 10px 15px; }
-            .logo { font-size: 20px; }
-            .btn-logout { font-size: 0.8rem; padding: 8px 15px; }
-            .movie-card-title { font-size: 0.8rem; padding: 8px; }
+        .movie-card img {
+            width: 100%;
+            border-radius: 8px;
+            display: block;
         }
     </style>
 </head>
 <body>
 
-    <div class="navbar">
-        <div class="logo">Streamly+</div>
-        <button id="btnLogout" class="btn-primary">Terminar sessão</button>
+    <header class="navbar">
+        <div class="logo">STREAMLY+</div>
+        <nav>
+            <a href="app.html">Início</a>
+            <button onclick="logout()" style="background:none; border:none; color:white; cursor:pointer; font-weight:bold;">Sair</button>
+        </nav>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Pesquisar">
     </div>
 
-<div class="search-container">
-    <input type="text" id="searchInput" placeholder="Pesquisar">
-</div>
-
-<div id="favoritesSection" style="display:none;">
-    <h2 class="section-title">A Minha Lista</h2>
-    <div id="favoritesList" class="movie-grid"></div>
-</div>
-
-<h2 class="section-title">Todos os Filmes</h2>
-<div id="movieGrid" class="movie-grid"></div>
-    
-    <h2 class="page-title">Continua a Ver</h2>
-    <div class="movie-grid" id="movie-grid-continue">
-        <div style="grid-column: 1 / -1; text-align: center; color: #a8a8a8;" id="no-continue-watching">
-            Nenhum filme a continuar.
-        </div>
+    <div id="favoritesSection" style="display:none;">
+        <h2 class="section-title">A Minha Lista</h2>
+        <div id="favoritesList" class="movie-grid"></div>
+        <hr style="border: 0.5px solid #333; margin: 0 4% 20px 4%;">
     </div>
 
-    <h2 class="page-title">Filmes Populares</h2>
-    <div class="movie-grid" id="movie-grid">
-        <div style="grid-column: 1 / -1; text-align: center; color: #a8a8a8;" id="loading-movies">
-            A carregar filmes...
-        </div>
+    <h2 class="section-title">Todos os Filmes</h2>
+    <div id="movieGrid" class="movie-grid">
+        <p style="padding: 20px; color: #999;">A carregar filmes...</p>
     </div>
 
     <script type="module">
-        import { auth, db } from './firebase-config.js';
+        import { db, auth } from './firebase-config.js';
+        import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Redireciona se o utilizador não estiver logado
-        auth.onAuthStateChanged(user => {
-            if (!user) {
-                window.location.href = "index.html";
-            } else {
-                loadMovies();
+        const movieGrid = document.getElementById('movieGrid');
+        const favoritesList = document.getElementById('favoritesList');
+        const favoritesSection = document.getElementById('favoritesSection');
+        const searchInput = document.getElementById('searchInput');
+
+        let allMovies = [];
+
+        // Função para carregar tudo
+        async function loadData() {
+            try {
+                // 1. Buscar filmes do Firestore
+                const querySnapshot = await getDocs(collection(db, "movies"));
+                allMovies = querySnapshot.docs.map(doc => ({ 
+                    id: doc.id, 
+                    ...doc.data() 
+                }));
+
+                console.log("Filmes carregados:", allMovies);
+                renderMovies(allMovies);
+
+                // 2. Verificar utilizador logado para os favoritos
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        const userDoc = await getDoc(doc(db, "users", user.uid));
+                        if (userDoc.exists()) {
+                            const favIds = userDoc.data().favorites || [];
+                            const favMovies = allMovies.filter(m => favIds.includes(m.id));
+                            
+                            if (favMovies.length > 0) {
+                                favoritesSection.style.display = 'block';
+                                renderFavorites(favMovies);
+                            } else {
+                                favoritesSection.style.display = 'none';
+                            }
+                        }
+                    } else {
+                        // Se não estiver logado, volta para o index
+                        window.location.href = "index.html";
+                    }
+                });
+            } catch (error) {
+                console.error("Erro ao carregar:", error);
+                movieGrid.innerHTML = "<p>Erro ao ligar ao catálogo.</p>";
             }
-        });
+        }
 
-        // Botão Sair
-        document.getElementById('btnLogout').onclick = () => {
+        function renderMovies(movies) {
+            if (movies.length === 0) {
+                movieGrid.innerHTML = "<p>Nenhum filme encontrado.</p>";
+                return;
+            }
+            movieGrid.innerHTML = movies.map(movie => `
+                <div class="movie-card" onclick="window.location.href='details.html?id=${movie.id}'">
+                    <img src="${movie.Banner || ''}" alt="Banner">
+                    <div style="padding: 10px 0; font-size: 0.9rem; font-weight: bold;">
+                        ${movie.Título || movie.Titulo || 'Filme sem Título'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderFavorites(movies) {
+            favoritesList.innerHTML = movies.map(movie => `
+                <div class="movie-card" onclick="window.location.href='details.html?id=${movie.id}'">
+                    <img src="${movie.Banner || ''}" alt="Banner">
+                </div>
+            `).join('');
+        }
+
+        // Lógica de Pesquisa
+        searchInput.oninput = () => {
+            const term = searchInput.value.toLowerCase();
+            const filtered = allMovies.filter(m => {
+                const titulo = (m.Título || m.Titulo || "").toLowerCase();
+                return titulo.includes(term);
+            });
+            renderMovies(filtered);
+        };
+
+        // Função Sair
+        window.logout = () => {
             signOut(auth).then(() => {
                 window.location.href = "index.html";
-            }).catch((error) => {
-                alert("Erro ao sair: " + error.message);
             });
         };
 
-        async function loadMovies() {
-            const movieGrid = document.getElementById('movie-grid');
-            const loadingMessage = document.getElementById('loading-movies');
-            movieGrid.innerHTML = ''; // Limpa a mensagem de "A carregar"
-
-            try {
-                // Obter todos os filmes da coleção 'movies'
-                const moviesCol = collection(db, "movies");
-                // Opcional: ordenar por Título (ou por outro campo que aches melhor)
-                const q = query(moviesCol); 
-                const movieSnapshot = await getDocs(q);
-
-                if (movieSnapshot.empty) {
-                    movieGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #a8a8a8;">Nenhum filme disponível ainda.</div>';
-                } else {
-                    movieSnapshot.forEach(doc => {
-                        const movieData = doc.data();
-                        const movieId = doc.id; // O ID do documento é o ID do filme
-
-                        const card = document.createElement('div');
-                        card.className = 'movie-card';
-                        card.onclick = () => {
-                            window.location.href = `details.html?id=${movieId}`;
-                        };
-
-                        // Se tiver banner, usa-o, senão, mostra um fundo placeholder
-                        const imageUrl = movieData.Banner || 'https://via.placeholder.com/300x450/1a1d29/FFFFFF?text=Streamly+Filme';
-                        card.innerHTML = `
-                            <img src="${imageUrl}" alt="${movieData.Título || 'Filme'}">
-                            <div class="movie-card-title">${movieData.Título || 'Sem Título'}</div>
-                        `;
-                        movieGrid.appendChild(card);
-                    });
-                }
-            } catch (error) {
-                console.error("Erro ao carregar filmes:", error);
-                movieGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: red;">Erro ao carregar filmes. Recarrega ou tenta novamente mais tarde.</div>';
-            }
-        }
-        import { db, auth } from './firebase-config.js';
-import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const movieGrid = document.getElementById('movieGrid');
-const favoritesList = document.getElementById('favoritesList');
-const favoritesSection = document.getElementById('favoritesSection');
-const searchInput = document.getElementById('searchInput');
-
-let allMovies = [];
-
-async function loadMovies() {
-    // 1. Carregar todos os filmes
-    const querySnapshot = await getDocs(collection(db, "movies"));
-    allMovies = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    renderMovies(allMovies);
-
-    // 2. Carregar Favoritos se o user estiver logado
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists() && userDoc.data().favorites) {
-                const favIds = userDoc.data().favorites;
-                const favMovies = allMovies.filter(m => favIds.includes(m.id));
-                
-                if (favMovies.length > 0) {
-                    favoritesSection.style.display = 'block';
-                    renderFavorites(favMovies);
-                }
-            }
-        }
-    });
-}
-
-function renderMovies(movies) {
-    movieGrid.innerHTML = movies.map(movie => `
-        <div class="movie-card" onclick="window.location.href='details.html?id=${movie.id}'">
-            <img src="${movie.Banner}" alt="${movie.Título}">
-            <div class="movie-info">
-                <h3>${movie.Título}</h3>
-            </div>
-        </div>
-    `).join('');
-}
-
-function renderFavorites(movies) {
-    favoritesList.innerHTML = movies.map(movie => `
-        <div class="movie-card" onclick="window.location.href='details.html?id=${movie.id}'">
-            <img src="${movie.Banner}" alt="${movie.Título}">
-        </div>
-    `).join('');
-}
-
-// Lógica da Barra de Pesquisa
-searchInput.oninput = () => {
-    const term = searchInput.value.toLowerCase();
-    const filtered = allMovies.filter(m => m.Título.toLowerCase().includes(term));
-    renderMovies(filtered);
-};
-
-loadMovies();
+        loadData();
     </script>
 </body>
 </html>
