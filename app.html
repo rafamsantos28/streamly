@@ -61,22 +61,14 @@
     <header class="navbar">
         <div class="logo">STREAMLY+</div>
         <nav>
-            <a href="app.html">Início</a>
-            <button onclick="logout()" style="background:none; border:none; color:white; cursor:pointer; font-weight:bold;">Sair</button>
+            <button onclick="logout()" style="background:none; border:none; color:white; cursor:pointer; font-weight:bold;">Terminar sessão</button>
         </nav>
     </header>
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Pesquisar">
     </div>
-
-    <div id="favoritesSection" style="display:none;">
-        <h2 class="section-title">A Minha Lista</h2>
-        <div id="favoritesList" class="movie-grid"></div>
-        <hr style="border: 0.5px solid #333; margin: 0 4% 20px 4%;">
-    </div>
-
-    <h2 class="section-title">Todos os Filmes</h2>
+    
     <div id="movieGrid" class="movie-grid">
         <p style="padding: 20px; color: #999;">A carregar filmes...</p>
     </div>
