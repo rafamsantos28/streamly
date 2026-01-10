@@ -102,7 +102,7 @@
 
     <section class="hero">
         <h1>Transforma a tua casa num verdadeiro cinema.</h1>
-        <p>Começa a ver hoje mesmo. Vários filmes, êxitos e exclusivos com a qualidade que mereces.</p>
+        <p>Começa a ver já hoje. Vários filmes, êxitos e exclusivos com a qualidade que mereces.</p>
         <div style="display: flex; flex-wrap: wrap; justify-content: center; width: 100%;">
             <button class="btn-main btn-login" onclick="openModal('loginModal')">Iniciar Sessão</button>
             <button class="btn-main btn-signup" onclick="openModal('signupModal')">Criar Conta</button>
@@ -124,55 +124,72 @@
             <span class="close-modal" onclick="closeModal('signupModal')">&times;</span>
             <h2 style="color: #ba852a;">Criar Conta</h2>
             <input type="email" id="regEmail" placeholder="Email">
-            <input type="password" id="regPass" placeholder="Palavra-passe (min. 6 carateres)">
+            <input type="password" id="regPass" placeholder="Palavra-passe">
             <button class="btn-main btn-signup" id="doReg" style="max-width: 100%; margin: 20px 0 0 0;">Registar</button>
         </div>
     </div>
 
     <script type="module">
-        import { auth, db } from './firebase-config.js';
-        import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { auth, db } from './firebase-config.js';
+    import { 
+        signInWithEmailAndPassword, 
+        createUserWithEmailAndPassword, 
+        setPersistence, 
+        browserLocalPersistence 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Funções para abrir/fechar Modais
-        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
-        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    // Funções para abrir/fechar Modais
+    window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+    window.closeModal = (id) => document.getElementById(id).style.display = 'none';
 
-        // Lógica de Login
-        document.getElementById('doLogin').onclick = () => {
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPass').value;
-            signInWithEmailAndPassword(auth, email, pass)
-                .then(() => window.location.href = "app.html")
-                .catch(err => alert("Erro ao entrar: " + err.message));
-        };
+    // Lógica de Login com Persistência Local (Fica ligado mesmo ao fechar o browser)
+    document.getElementById('doLogin').onclick = () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
 
-        // Lógica de Registo (Cria o user no Auth e o documento de favoritos no Firestore)
-        document.getElementById('doReg').onclick = async () => {
-            const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-                const user = userCredential.user;
-                
-                // Cria o documento do utilizador no Firestore para os favoritos
-                await setDoc(doc(db, "users", user.uid), {
-                    email: email,
-                    favorites: []
-                });
-
+        setPersistence(auth, browserLocalPersistence)
+            .then(() => {
+                return signInWithEmailAndPassword(auth, email, pass);
+            })
+            .then(() => {
                 window.location.href = "app.html";
-            } catch (err) {
-                alert("Erro ao registar: " + err.message);
-            }
-        };
+            })
+            .catch(err => alert("Erro ao entrar: " + err.message));
+    };
 
-        // Fechar modal ao clicar fora dele
-        window.onclick = (event) => {
-            if (event.target.className === 'modal-overlay') {
-                event.target.style.display = 'none';
-            }
-        };
-    </script>
+    // Lógica de Registo
+    document.getElementById('doReg').onclick = async () => {
+        const email = document.getElementById('regEmail').value;
+        const pass = document.getElementById('regPass').value;
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+            const user = userCredential.user;
+            
+            await setDoc(doc(db, "users", user.uid), {
+                email: email,
+                favorites: []
+            });
+
+            window.location.href = "app.html";
+        } catch (err) {
+            alert("Erro ao registar: " + err.message);
+        }
+    };
+
+    // Fechar modal ao clicar fora dele
+    window.onclick = (event) => {
+        if (event.target.className === 'modal-overlay') {
+            event.target.style.display = 'none';
+        }
+    };
+
+    // INOVAÇÃO: Se o user já estiver logado, manda-o direto para a app
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            window.location.href = "app.html";
+        }
+    });
+</script>
 </body>
 </html>
