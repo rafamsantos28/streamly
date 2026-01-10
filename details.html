@@ -141,6 +141,17 @@
             <div class="btn-group">
                 <button id="btnPlay" class="btn-play">▶ Reproduzir</button>
                 <button id="btnFav" class="btn-fav">+</button>
+                <div class="actions">
+    <button onclick="toggleFavorite()" id="favBtn"> + A Minha Lista</button>
+    <button onclick="openTrailer()">▶ Trailer</button>
+</div>
+
+<div id="trailerModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content trailer-content">
+        <span class="close-modal" onclick="closeTrailer()">&times;</span>
+        <div id="trailerPlayer"></div>
+    </div>
+</div>
             </div>
             <p id="m-desc" class="description"></p>
         </div>
