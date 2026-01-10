@@ -90,3 +90,7 @@ body {
     font-size: 30px;
     cursor: pointer;
 }
+
+.modal-overlay {
+    background: #000; /* Preto puro para o filme */
+}
