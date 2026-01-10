@@ -160,27 +160,47 @@
             }
         }
 
-        // --- FUNÇÃO UNIFICADA PARA PLAYER (FILME OU TRAILER) ---
-        function openPlayer(videoID) {
-            if (!videoID) return alert("Vídeo não disponível.");
-            const playerDiv = document.getElementById('trailerPlayer');
-            playerDiv.innerHTML = `
-                <iframe 
-                    src="https://player.vimeo.com/video/${videoID}?autoplay=1&muted=0" 
-                    width="100%" height="100%" frameborder="0" 
-                    allow="autoplay; fullscreen" allowfullscreen>
-                </iframe>
-            `;
-            document.getElementById('trailerModal').style.display = 'flex';
-        }
+        // --- FUNÇÃO UNIFICADA PARA PLAYER COM FULLSCREEN AUTOMÁTICO ---
+function openPlayer(videoID) {
+    if (!videoID) return alert("Vídeo não disponível.");
+    
+    const modal = document.getElementById('trailerModal');
+    const playerDiv = document.getElementById('trailerPlayer');
+    
+    // Injetamos o iframe
+    playerDiv.innerHTML = `
+        <iframe 
+            id="vimeoIframe"
+            src="https://player.vimeo.com/video/${videoID}?autoplay=1&muted=0" 
+            width="100%" height="100%" frameborder="0" 
+            allow="autoplay; fullscreen" allowfullscreen>
+        </iframe>
+    `;
+    
+    // Exibimos o modal
+    modal.style.display = 'flex';
 
-        document.getElementById('playBtn').onclick = () => openPlayer(currentMovieData.VimeoID);
-        document.getElementById('trailerBtn').onclick = () => openPlayer(currentMovieData.TrailerID);
+    // Tenta colocar o modal em Fullscreen (funciona melhor após interação do user)
+    if (modal.requestFullscreen) {
+        modal.requestFullscreen();
+    } else if (modal.webkitRequestFullscreen) { /* Safari/iOS */
+        modal.webkitRequestFullscreen();
+    } else if (modal.msRequestFullscreen) { /* IE11 */
+        modal.msRequestFullscreen();
+    }
+}
 
-        document.getElementById('closeTrailer').onclick = () => {
-            document.getElementById('trailerPlayer').innerHTML = ''; 
-            document.getElementById('trailerModal').style.display = 'none';
-        };
+// --- AJUSTE NO BOTÃO FECHAR PARA SAIR DO FULLSCREEN ---
+document.getElementById('closeTrailer').onclick = () => {
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) { /* Safari */
+        document.webkitExitFullscreen();
+    }
+    
+    document.getElementById('trailerPlayer').innerHTML = ''; 
+    document.getElementById('trailerModal').style.display = 'none';
+};
 
         // --- FAVORITOS ---
         async function checkFavoriteStatus() {
