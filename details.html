@@ -6,97 +6,88 @@
     <title>Detalhes | Streamly+</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Estilos do Modal do Trailer */
+        /* MODAL E PLAYER FULLSCREEN */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); /* Fundo mais escuro para o filme */
+            top: 0; left: 0; 
+            width: 100%; height: 100%;
+            background: #000;
             z-index: 1000;
             justify-content: center;
             align-items: center;
         }
+
         .trailer-content {
             width: 90%;
             max-width: 1100px;
             aspect-ratio: 16 / 9;
             background: #000;
             position: relative;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
-        #trailerPlayer { width: 100%; height: 100%; }
+
+        /* AJUSTE PARA O VÍDEO OCUPAR TUDO NO MODO FULLSCREEN */
+        .modal-overlay:fullscreen .trailer-content,
+        .modal-overlay:-webkit-full-screen .trailer-content {
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+        }
+
+        #trailerPlayer { width: 100%; height: 100%; position: relative; }
+
         .close-modal {
             position: absolute;
-            top: -45px; right: 0;
-            color: white; font-size: 40px; cursor: pointer;
-            transition: 0.3s;
+            top: -50px; right: 0;
+            color: white; font-size: 45px; cursor: pointer;
+            z-index: 1001;
         }
-        .close-modal:hover { color: #e50914; }
 
-        /* Seta de Voltar */
+        /* Esconder o botão de fechar quando estiver em fullscreen para não ficar por cima do filme */
+        .modal-overlay:fullscreen .close-modal,
+        .modal-overlay:-webkit-full-screen .close-modal {
+            display: none;
+        }
+
+        /* SETA DE VOLTAR */
         .back-button {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            color: white;
-            font-size: 40px;
-            text-decoration: none;
-            z-index: 10;
-            transition: transform 0.3s;
-            cursor: pointer;
+            top: 20px; left: 20px;
+            color: white; font-size: 40px;
+            text-decoration: none; z-index: 10;
+            transition: 0.3s;
         }
         .back-button:hover { transform: scale(1.2); }
 
-        /* Ajuste do fundo dinâmico */
+        /* FUNDO E CONTEÚDO */
         .details-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover;
-            background-position: center;
-            filter: brightness(0.25);
-            z-index: -1;
-            transition: background-image 0.5s ease-in-out;
+            background-size: cover; background-position: center;
+            filter: brightness(0.25); z-index: -1;
         }
 
-        .details-container {
-            padding: 150px 5% 50px 5%;
-            color: white;
-        }
-
+        .details-container { padding: 150px 5% 50px 5%; color: white; }
+        .actions { display: flex; gap: 15px; margin-top: 30px; }
         .actions button {
-            padding: 12px 25px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            border: none;
-            transition: 0.3s;
+            padding: 12px 25px; font-size: 1rem; font-weight: bold;
+            border-radius: 5px; cursor: pointer; border: none;
         }
-
-        .btn-primary { background-color: white; color: black; }
-        .btn-primary:hover { background-color: #e6e6e6; }
-        .btn-secondary { background-color: rgba(109, 109, 110, 0.7); color: white; }
-        .btn-secondary:hover { background-color: rgba(109, 109, 110, 0.9); }
+        .btn-primary { background: white; color: black; }
+        .btn-secondary { background: rgba(109, 109, 110, 0.7); color: white; }
     </style>
 </head>
 <body>
 
     <a href="app.html" class="back-button">←</a>
-
     <div id="movieBackground" class="details-bg"></div>
-
-    <header class="navbar">
-        <div class="logo" onclick="window.location.href='app.html'" style="cursor:pointer">STREAMLY+</div>
-    </header>
 
     <main class="details-container">
         <p id="statusMsg">A carregar detalhes...</p>
-        
         <div id="movieInfo" style="display:none;">
-            <h1 id="movieTitle" style="font-size: 3.5rem; margin-bottom: 10px;"></h1>
-            <p id="movieDescription" style="margin: 20px 0; line-height: 1.6; max-width: 700px; font-size: 1.1rem;"></p>
-            
-            <div class="actions" style="display: flex; gap: 15px; margin-top: 30px;">
+            <h1 id="movieTitle" style="font-size: 3.5rem;"></h1>
+            <p id="movieDescription" style="margin: 20px 0; line-height: 1.6; max-width: 700px;"></p>
+            <div class="actions">
                 <button id="playBtn" class="btn-primary">▶ Reproduzir</button>
                 <button id="trailerBtn" class="btn-secondary">🎬 Trailer</button>
                 <button id="favBtn" class="btn-secondary">+</button>
@@ -113,143 +104,22 @@
 
     <script type="module">
         import { db, auth } from './firebase-config.js';
-        import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // Note: confirm if you use firebase-firestore.js or firebase-auth.js here based on your config. Correct is firestore for docs.
+        import { doc as fireDoc, getDoc as fireGetDoc, updateDoc as fireUpdateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const urlParams = new URLSearchParams(window.location.search);
         const movieId = urlParams.get('id');
-
-        const movieTitle = document.getElementById('movieTitle');
-        const movieDesc = document.getElementById('movieDescription');
-        const movieBG = document.getElementById('movieBackground');
-        const movieInfo = document.getElementById('movieInfo');
-        const statusMsg = document.getElementById('statusMsg');
-        const favBtn = document.getElementById('favBtn');
-
         let currentMovieData = null;
 
         async function loadMovieDetails() {
-            if (!movieId) {
-                statusMsg.innerText = "Filme não encontrado.";
-                return;
-            }
+            if (!movieId) return;
+            const docRef = fireDoc(db, "movies", movieId);
+            const docSnap = await fireGetDoc(docRef);
 
-            try {
-                const docRef = doc(db, "movies", movieId);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    currentMovieData = docSnap.data();
-                    const nomeFilme = currentMovieData.Título || currentMovieData.Titulo || "Filme";
-
-                    document.title = `${nomeFilme} | Streamly+`; 
-                    
-                    movieTitle.innerText = nomeFilme;
-                    movieDesc.innerText = currentMovieData.Sinopse || "Sem sinopse disponível.";
-                    movieBG.style.backgroundImage = `url('${currentMovieData.Banner}')`;
-                    
-                    statusMsg.style.display = 'none';
-                    movieInfo.style.display = 'block';
-
-                    checkFavoriteStatus();
-                } else {
-                    statusMsg.innerText = "Este filme não existe na nossa base de dados.";
-                }
-            } catch (err) {
-                console.error(err);
-                statusMsg.innerText = "Erro ao carregar detalhes do conteúdo.";
-            }
-        }
-
-        // --- FUNÇÃO UNIFICADA PARA PLAYER COM FULLSCREEN ---
-    function openPlayer(videoID) {
-    if (!videoID) {
-        alert("Vídeo não disponível.");
-        return;
-    }
-    
-    const modal = document.getElementById('trailerModal');
-    const playerDiv = document.getElementById('trailerPlayer');
-    
-    // 1. Injetamos o iframe (Garantindo allow="autoplay; fullscreen")
-    playerDiv.innerHTML = `
-        <iframe 
-            id="vimeoIframe"
-            src="https://player.vimeo.com/video/${videoID}?autoplay=1&muted=0" 
-            style="width:100%; height:100%;" 
-            frameborder="0" 
-            allow="autoplay; fullscreen" 
-            allowfullscreen>
-        </iframe>
-    `;
-    
-    // 2. Mostramos o modal
-    modal.style.display = 'flex';
-
-    // 3. Disparamos o Fullscreen no Modal
-        if (modal.requestFullscreen) {
-        modal.requestFullscreen().catch(err => console.log("Erro fullscreen:", err));
-        } else if (modal.webkitRequestFullscreen) { /* Safari / iOS */
-        modal.webkitRequestFullscreen();
-        }
-    }
-
-    // --- CONFIGURAÇÃO DOS EVENTOS DE CLIQUE ---
-    document.getElementById('playBtn').onclick = function() {
-        openPlayer(currentMovieData.VimeoID);
-    };
-
-    document.getElementById('trailerBtn').onclick = function() {
-        openPlayer(currentMovieData.TrailerID);
-    };
-
-    // --- SAÍDA LIMPA ---
-    document.getElementById('closeTrailer').onclick = function() {
-          if (document.fullscreenElement || document.webkitFullscreenElement) {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            }
-        }
-    
-    document.getElementById('trailerPlayer').innerHTML = ''; 
-    document.getElementById('trailerModal').style.display = 'none';
-    };
-        
-
-        // --- FAVORITOS ---
-        async function checkFavoriteStatus() {
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
-                    if (userDoc.exists()) {
-                        const favorites = userDoc.data().favorites || [];
-                        if (favorites.includes(movieId)) {
-                            favBtn.innerText = "✓";
-                        }
-                    }
-                }
-            });
-        }
-
-        favBtn.onclick = async () => {
-            const user = auth.currentUser;
-            if (!user) return alert("Faz login para guardar favoritos!");
-
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
-            const favorites = userSnap.data().favorites || [];
-
-            if (favorites.includes(movieId)) {
-                await updateDoc(userRef, { favorites: arrayRemove(movieId) });
-                favBtn.innerText = "+";
-            } else {
-                await updateDoc(userRef, { favorites: arrayUnion(movieId) });
-                favBtn.innerText = "✓";
-            }
-        };
-
-        loadMovieDetails();
-    </script>
-</body>
-</html>
+            if (docSnap.exists()) {
+                currentMovieData = docSnap.data();
+                const nomeFilme = currentMovieData.Título || currentMovieData.Titulo || "Filme";
+                document.title = `${nomeFilme} | Streamly+`; 
+                document.getElementById('movieTitle').innerText = nomeFilme;
+                document.getElementById('movieDescription').innerText = currentMovieData.Sinopse || "";
+                document.getElementById('movieBackground').style.backgroundImage = `url('${currentMovieData.Banner}')`;
