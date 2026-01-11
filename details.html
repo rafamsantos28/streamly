@@ -6,62 +6,17 @@
     <title>Detalhes | Streamly+</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* MODAL E PLAYER FULLSCREEN */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; 
-            width: 100%; height: 100%;
-            background: #000;
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; background: #000;
+            z-index: 1000; justify-content: center; align-items: center;
         }
-
-        .trailer-content {
-            width: 90%;
-            max-width: 1100px;
-            aspect-ratio: 16 / 9;
-            background: #000;
-            position: relative;
-        }
-
-        /* AJUSTE PARA O VÍDEO OCUPAR TUDO NO MODO FULLSCREEN */
+        .trailer-content { width: 90%; max-width: 1100px; aspect-ratio: 16/9; position: relative; }
         .modal-overlay:fullscreen .trailer-content,
-        .modal-overlay:-webkit-full-screen .trailer-content {
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-        }
-
-        #trailerPlayer { width: 100%; height: 100%; position: relative; }
-
-        .close-modal {
-            position: absolute;
-            top: -50px; right: 0;
-            color: white; font-size: 45px; cursor: pointer;
-            z-index: 1001;
-        }
-
-        /* SETA DE VOLTAR */
-        .back-button {
-            position: fixed;
-            top: 20px; left: 20px;
-            color: white; font-size: 40px;
-            text-decoration: none; z-index: 10;
-            transition: 0.3s;
-        }
-        .back-button:hover { transform: scale(1.2); }
-
-        .details-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover; background-position: center;
-            filter: brightness(0.25); z-index: -1;
-        }
-
-        .details-container { padding: 150px 5% 50px 5%; color: white; }
-        .actions { display: flex; gap: 15px; margin-top: 30px; }
+        .modal-overlay:-webkit-full-screen .trailer-content { width: 100vw; height: 100vh; max-width: none; }
+        .close-modal { position: absolute; top: -50px; right: 0; color: white; font-size: 45px; cursor: pointer; }
+        .back-button { position: fixed; top: 20px; left: 20px; color: white; font-size: 40px; text-decoration: none; z-index: 10; }
+        .details-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: brightness(0.25); z-index: -1; opacity: 0; transition: opacity 0.8s; }
     </style>
 </head>
 <body>
@@ -70,12 +25,10 @@
     <div id="movieBackground" class="details-bg"></div>
 
     <main class="details-container">
-        <p id="statusMsg">A carregar detalhes...</p>
-        
+        <p id="statusMsg" style="color: gray;">A carregar...</p>
         <div id="movieInfo" style="display:none;">
             <h1 id="movieTitle" style="font-size: 3.5rem;"></h1>
-            <p id="movieDescription" style="margin: 20px 0; line-height: 1.6; max-width: 700px; font-size: 1.1rem;"></p>
-            
+            <p id="movieDescription" style="margin: 20px 0; line-height: 1.6; max-width: 700px;"></p>
             <div class="actions">
                 <button id="playBtn" class="btn-primary">▶ Reproduzir</button>
                 <button id="trailerBtn" class="btn-secondary">🎬 Trailer</button>
@@ -87,7 +40,7 @@
     <div id="trailerModal" class="modal-overlay">
         <div class="trailer-content">
             <span class="close-modal" id="closeTrailer">&times;</span>
-            <div id="trailerPlayer"></div>
+            <div id="trailerPlayer" style="width:100%; height:100%;"></div>
         </div>
     </div>
 
@@ -97,4 +50,75 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const urlParams = new URLSearchParams(window.location.search);
-        const movieId = urlParams.
+        const movieId = urlParams.get('id');
+        let currentMovieData = null;
+
+        async function init() {
+            if (!movieId) return;
+
+            // 1. TENTA CARREGAR DA CACHE (INSTANTÂNEO)
+            const cached = localStorage.getItem('movie_cache');
+            if (cached) {
+                const movies = JSON.parse(cached);
+                currentMovieData = movies.find(m => m.id === movieId);
+                if (currentMovieData) renderDetails(currentMovieData);
+            }
+
+            // 2. BUSCA NO FIREBASE PARA GARANTIR DADOS ATUAIS
+            try {
+                const docSnap = await getDoc(doc(db, "movies", movieId));
+                if (docSnap.exists()) {
+                    currentMovieData = docSnap.data();
+                    renderDetails(currentMovieData);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function renderDetails(data) {
+            const nome = data.Título || data.Titulo || "Filme";
+            document.title = `${nome} | Streamly+`;
+            document.getElementById('movieTitle').innerText = nome;
+            document.getElementById('movieDescription').innerText = data.Sinopse || "";
+            
+            const bg = document.getElementById('movieBackground');
+            bg.style.backgroundImage = `url('${data.Banner}')`;
+            bg.style.opacity = "1";
+
+            document.getElementById('statusMsg').style.display = 'none';
+            document.getElementById('movieInfo').style.display = 'block';
+            checkFavoriteStatus();
+        }
+
+        function openPlayer(videoID) {
+            if (!videoID) return alert("Vídeo não disponível.");
+            const modal = document.getElementById('trailerModal');
+            document.getElementById('trailerPlayer').innerHTML = `<iframe src="https://player.vimeo.com/video/${videoID}?autoplay=1&muted=0" style="position:absolute; top:0; left:0; width:100%; height:100%;" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+            modal.style.display = 'flex';
+            if (modal.requestFullscreen) modal.requestFullscreen();
+            else if (modal.webkitRequestFullscreen) modal.webkitRequestFullscreen();
+        }
+
+        document.getElementById('playBtn').onclick = () => openPlayer(currentMovieData.VimeoID);
+        document.getElementById('trailerBtn').onclick = () => openPlayer(currentMovieData.TrailerID);
+        document.getElementById('closeTrailer').onclick = () => {
+            if (document.fullscreenElement || document.webkitFullscreenElement) document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+            document.getElementById('trailerPlayer').innerHTML = ''; 
+            document.getElementById('trailerModal').style.display = 'none';
+        };
+
+        async function checkFavoriteStatus() {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        const favs = userDoc.data().favorites || [];
+                        document.getElementById('favBtn').innerText = favs.includes(movieId) ? "✓" : "+";
+                    }
+                }
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
