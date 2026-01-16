@@ -4,12 +4,12 @@
 * {
     margin: 0;
     padding: 0;
-    box-shadow: border-box;
+    box-sizing: border-box; /* Corrigido de box-shadow para box-sizing */
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 body {
-    background-color: #111; /* Preto suave para não cansar os olhos */
+    background-color: #111;
     color: white;
     overflow-x: hidden;
 }
@@ -27,14 +27,14 @@ body {
 }
 
 .logo {
-    color: #e50914; /* Vermelho vibrante */
+    color: #e50914;
     font-size: 1.8rem;
     font-weight: bold;
     letter-spacing: 1px;
     text-decoration: none;
 }
 
-/* Grelha de Filmes (Página Principal) */
+/* Grelha de Filmes */
 .movie-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -62,23 +62,16 @@ body {
     border-radius: 4px;
 }
 
-.movie-info {
-    padding: 10px 0;
-}
+.movie-info { padding: 10px 0; }
+.movie-info h3 { font-size: 0.9rem; font-weight: normal; }
 
-.movie-info h3 {
-    font-size: 0.9rem;
-    font-weight: normal;
-}
-
-/* Títulos de Secção */
 .section-title {
     margin: 30px 4% 10px 4%;
     font-size: 1.4rem;
     color: #e5e5e5;
 }
 
-/* Detalhes do Filme (details.html) */
+/* Detalhes do Filme */
 .details-container {
     position: relative;
     min-height: 100vh;
@@ -88,80 +81,46 @@ body {
 
 .details-bg {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background-size: cover;
     background-position: center top;
     z-index: -1;
 }
 
 /* Botões */
-.actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 25px;
-}
+.actions { display: flex; gap: 15px; margin-top: 25px; }
 
 .btn-primary {
-    background-color: white;
-    color: black;
-    padding: 12px 30px;
-    border-radius: 4px;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
+    background-color: white; color: black;
+    padding: 12px 30px; border-radius: 4px;
+    border: none; font-weight: bold; cursor: pointer;
 }
 
 .btn-secondary {
-    background-color: rgba(109, 109, 110, 0.7);
-    color: white;
-    padding: 12px 30px;
-    border-radius: 4px;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
+    background-color: rgba(109, 109, 110, 0.7); color: white;
+    padding: 12px 30px; border-radius: 4px;
+    border: none; font-weight: bold; cursor: pointer;
 }
 
 .btn-primary:hover { background-color: rgba(255,255,255,0.8); }
 .btn-secondary:hover { background-color: rgba(109, 109, 110, 0.4); }
 
 /* Barra de Pesquisa */
-.search-container {
-    padding: 20px 4%;
-    text-align: center;
-}
-
+.search-container { padding: 20px 4%; text-align: center; }
 #searchInput {
-    width: 100%;
-    max-width: 600px;
-    padding: 12px 20px;
-    background: #222;
-    border: 1px solid #444;
-    color: white;
-    border-radius: 4px;
-    outline: none;
+    width: 100%; max-width: 600px;
+    padding: 12px 20px; background: #222;
+    border: 1px solid #444; color: white;
+    border-radius: 4px; outline: none;
 }
 
-#searchInput:focus {
-    border-color: #888;
-}
-
-/* Responsividade para Telemóveis */
+/* Responsividade */
 @media (max-width: 768px) {
-    .movie-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    }
-    
+    .movie-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
     .details-container {
-        padding-top: 100px;
-        text-align: center;
+        padding-top: 100px; text-align: center;
         background: linear-gradient(to top, rgba(0,0,0,1) 40%, transparent 100%);
     }
-    
-    .actions {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
+    .actions { justify-content: center; flex-wrap: wrap; }
 }
