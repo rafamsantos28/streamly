@@ -114,3 +114,41 @@ function abrirDetalhesFilme(filme) {
     // Configura o botão de Play para o link do Streamtape
     document.getElementById('btn-play').onclick = () => iniciarPlayer(filme.urlStreamtape);
 }
+function openModal(type) {
+    const modal = document.getElementById('auth-modal');
+    const title = document.getElementById('modal-title');
+    const btn = document.getElementById('auth-action-btn');
+    
+    modal.classList.remove('hidden');
+    
+    if (type === 'login') {
+        title.innerText = "Iniciar Sessão";
+        btn.onclick = loginUser;
+    } else {
+        title.innerText = "Criar Conta";
+        btn.onclick = signupUser;
+    }
+}
+
+function closeModal() {
+    document.getElementById('auth-modal').classList.add('hidden');
+}
+
+// Após o login com sucesso no Firebase:
+async function checkProfiles() {
+    const user = firebase.auth().currentUser;
+    const profilesRef = db.collection('users').doc(user.uid).collection('profiles');
+    const snapshot = await profilesRef.get();
+
+    document.getElementById('landing-page').classList.add('hidden');
+    document.getElementById('auth-modal').classList.add('hidden');
+    document.getElementById('profile-selection').classList.remove('hidden');
+
+    if (snapshot.empty) {
+        // Se não houver perfis, forçar a criação do primeiro
+        alert("Crie o seu primeiro perfil para continuar!");
+        openAddProfileModal(); 
+    } else {
+        renderProfiles(snapshot);
+    }
+}
