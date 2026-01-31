@@ -1,0 +1,49 @@
+:root {
+    --primary: #4e67b1;
+    --accent: #ba852a;
+    --bg: #040714; /* Escuro estilo Disney+ */
+    --white: #ffffff;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+}
+
+.hidden { display: none !important; }
+
+/* Navegação */
+nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 5%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+    position: fixed;
+    width: 100%;
+    z-index: 100;
+}
+
+/* Perfis no Canto Direito */
+.profile-menu { position: relative; }
+.avatar-nav { width: 40px; border-radius: 4px; cursor: pointer; }
+
+.profile-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    background: #1a1d29;
+    border: 1px solid #333;
+    padding: 10px;
+}
+
+.profile-menu:hover .profile-dropdown { display: block; }
+
+/* Player */
+#player-container {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: #000;
+    z-index: 1000;
+}
