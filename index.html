@@ -3,214 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="https://i.postimg.cc/G2Q6KMwj/Vibrant-Streamly-Logo-with-Play-Button.png" type="image/png">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/G2Q6KMwj/Vibrant-Streamly-Logo-with-Play-Button.png">
     <title>Sente O Cinema | Streamly+</title>
-    <style>
-        /* Estilos específicos da Landing Page */
-        body, html { height: 100%; overflow-x: hidden; }
-
-        .hero {
-            height: 100vh;
-            background: linear-gradient(rgba(0,0,0,0.2), #040714), 
-                        url('https://cnbl-cdn.bamgrid.com/assets/796696773322a36b5ed92694125b26284f23b749624510b6562092a4f48342f1/original'); /* Podes mudar para o teu link do Canva */
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 20px;
-        }
-
-        .hero h1 { font-size: clamp(2rem, 8vw, 4rem); margin-bottom: 10px; font-weight: 800; }
-        .hero p { font-size: clamp(1rem, 4vw, 1.5rem); max-width: 800px; margin-bottom: 30px; color: #f9f9f9; }
-
-        .btn-main {
-            padding: 15px 40px;
-            font-size: 1.1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: 0.3s;
-            width: 100%;
-            max-width: 300px;
-            margin: 10px;
-        }
-
-        .btn-login { background: #4e67b1; color: white; border: none; }
-        .btn-signup { background: #ba852a; color: white; border: none; }
-        .btn-main:hover { transform: scale(1.05); filter: brightness(1.2); }
-
-        /* --- Estilo das Janelas Modais --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: none; /* Escondido por padrão */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: #1a1d29;
-            padding: 40px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-            position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 15px; right: 20px;
-            font-size: 30px;
-            cursor: pointer;
-            color: #ccc;
-        }
-
-        .modal-content input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            background: #31343e;
-            border: 1px solid transparent;
-            border-radius: 5px;
-            color: white;
-            box-sizing: border-box;
-        }
-
-        .modal-content input:focus { border-color: #4e67b1; outline: none; }
-
-        /* Responsividade */
-        @media (max-width: 600px) {
-            .navbar { padding: 15px 20px; }
-            .modal-content { padding: 25px; }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://i.postimg.cc/G2Q6KMwj/Vibrant-Streamly-Logo-with-Play-Button.png" type="image/png">
 </head>
-<body>
+<body class="auth-page">
+    <div class="auth-container">
+        <h1 class="auth-logo">Streamly+</h1>
+        <p class="auth-tagline">Onde a tua paixão por filmes ganha vida.</p>
 
-    <div class="navbar">
-        <div class="logo">STREAMLY+</div>
-    </div>
-
-    <section class="hero">
-        <h1>Transforma a tua casa num verdadeiro cinema.</h1>
-        <p>Começa a ver já hoje. Vários filmes, êxitos e exclusivos com a qualidade que mereces.</p>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; width: 100%;">
-            <button class="btn-main btn-login" onclick="openModal('loginModal')">Iniciar Sessão</button>
-            <button class="btn-main btn-signup" onclick="openModal('signupModal')">Criar Conta</button>
-        </div>
-    </section>
-
-    <div id="loginModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('loginModal')">&times;</span>
-            <h2 style="color: #ba852a;">Iniciar Sessão</h2>
-            <input type="email" id="loginEmail" placeholder="Email">
-            <input type="password" id="loginPass" placeholder="Palavra-passe">
-            <button class="btn-main btn-login" id="doLogin" style="max-width: 100%; margin: 20px 0 0 0;">Entrar</button>
+        <div class="auth-form-wrapper">
+            <h2>Bem-vindo</h2>
+            <form id="authForm">
+                <input type="email" id="email" placeholder="Email" required autocomplete="email">
+                <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+                <button type="submit" id="authButton" class="btn-primary">Iniciar sessão</button>
+            </form>
+            <p class="auth-toggle-text">
+                Não tens conta? <a href="#" id="toggleAuth">Regista-te agora</a>
+            </p>
+            <div id="authMessage" class="message"></div>
         </div>
     </div>
 
-    <div id="signupModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('signupModal')">&times;</span>
-            <h2 style="color: #ba852a;">Criar Conta</h2>
-            <input type="email" id="regEmail" placeholder="Email">
-            <input type="password" id="regPass" placeholder="Palavra-passe">
-            <button class="btn-main btn-signup" id="doReg" style="max-width: 100%; margin: 20px 0 0 0;">Registar</button>
-        </div>
-    </div>
-
-    <script type="module">
-    import { auth, db } from './firebase-config.js';
-    import { 
-        signInWithEmailAndPassword, 
-        createUserWithEmailAndPassword, 
-        setPersistence, 
-        browserLocalPersistence,
-        onAuthStateChanged 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    // 1. VERIFICAÇÃO DE SESSÃO ATIVA (INOVAÇÃO)
-    // Se o utilizador já estiver logado, ele salta a página de login automaticamente
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            window.location.href = "app.html";
-        }
-    });
-
-    // Funções para abrir/fechar Modais
-    window.openModal = (id) => document.getElementById(id).style.display = 'flex';
-    window.closeModal = (id) => document.getElementById(id).style.display = 'none';
-
-    // 2. LÓGICA DE LOGIN COM PERSISTÊNCIA
-    document.getElementById('doLogin').onclick = () => {
-        const email = document.getElementById('loginEmail').value;
-        const pass = document.getElementById('loginPass').value;
-
-        if (!email || !pass) {
-            alert("Preenche todos os campos!");
-            return;
-        }
-
-        // Define a persistência como LOCAL (guarda no browser mesmo após fechar)
-        setPersistence(auth, browserLocalPersistence)
-            .then(() => {
-                return signInWithEmailAndPassword(auth, email, pass);
-            })
-            .then(() => {
-                window.location.href = "app.html";
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Erro ao entrar: Verifica as tuas credenciais.");
-            });
-    };
-
-    // 3. LÓGICA DE REGISTO
-    document.getElementById('doReg').onclick = async () => {
-        const email = document.getElementById('regEmail').value;
-        const pass = document.getElementById('regPass').value;
-
-        if (!email || !pass) {
-            alert("Preenche todos os campos!");
-            return;
-        }
-
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-            const user = userCredential.user;
-            
-            // Cria o perfil do utilizador no Firestore com lista de favoritos vazia
-            await setDoc(doc(db, "users", user.uid), {
-                email: email,
-                favorites: []
-            });
-
-            window.location.href = "app.html";
-        } catch (err) {
-            console.error(err);
-            alert("Erro ao registar: " + err.message);
-        }
-    };
-
-    // Fechar modal ao clicar fora dele
-    window.onclick = (event) => {
-        if (event.target.className === 'modal-overlay') {
-            event.target.style.display = 'none';
-        }
-    };
-</script>
+    <script type="module" src="auth.js"></script>
 </body>
 </html>
