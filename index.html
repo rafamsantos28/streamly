@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamly+</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav id="main-nav" class="hidden">
+        <div class="logo">STREAMLY+</div>
+        <div class="search-bar">
+            <input type="text" placeholder="Pesquisar filmes...">
+        </div>
+        <div class="profile-menu">
+            <img src="default-avatar.png" id="current-profile-img" class="avatar-nav">
+            <div class="profile-dropdown" id="profile-list">
+                </div>
+        </div>
+    </nav>
+
+    <section id="auth-page" class="active">
+        <div class="auth-container">
+            <h1>Bem-vindo</h1>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Palavra-passe">
+            <button id="btn-login" style="background-color: #4e67b1;">Iniciar sessão</button>
+            <button id="btn-signup" style="background-color: #ba852a;">Criar Conta</button>
+        </div>
+    </section>
+
+    <section id="profile-selection" class="hidden">
+        <h2>Quem está a ver?</h2>
+        <div id="profiles-grid" class="profiles-grid"></div>
+    </section>
+
+    <section id="home-page" class="hidden">
+        <div class="movie-grid" id="movie-list">
+            </div>
+    </section>
+
+    <section id="details-page" class="hidden">
+        <button onclick="showPage('home-page')">Voltar</button>
+        <div id="movie-details-content"></div>
+        <button id="btn-play" class="play-btn">Reproduzir</button>
+    </section>
+
+    <div id="player-container" class="hidden">
+        <video id="player" playsinline controls></video>
+        <button id="close-player">X</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
