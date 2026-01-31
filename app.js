@@ -51,3 +51,66 @@ function loadProfiles(profiles) {
         </div>
     `).join('');
 }
+const db = firebase.firestore();
+
+async function toggleFavorito(profileId, movieId) {
+    const profileRef = db.collection('users').doc(firebase.auth().currentUser.uid)
+                         .collection('profiles').doc(profileId);
+
+    const doc = await profileRef.get();
+    let favoritos = doc.data().favoritos || [];
+
+    if (favoritos.includes(movieId)) {
+        favoritos = favoritos.filter(id => id !== movieId); // Remove
+    } else {
+        favoritos.push(movieId); // Adiciona
+    }
+
+    await profileRef.update({ favoritos });
+    alert("Lista de favoritos atualizada!");
+}
+async function criarPerfil(nomePerfil, avatarUrl) {
+    const user = firebase.auth().currentUser;
+    const profilesRef = db.collection('users').doc(user.uid).collection('profiles');
+    
+    const snapshot = await profilesRef.get();
+    if (snapshot.size >= 5) {
+        alert("Limite de 5 perfis atingido!");
+        return;
+    }
+
+    await profilesRef.add({
+        name: nomePerfil,
+        avatar: avatarUrl,
+        favoritos: []
+    });
+    // Recarregar lista de perfis na UI
+}
+async function atualizarConta(novoEmail, novaSenha) {
+    const user = firebase.auth().currentUser;
+
+    try {
+        if (novoEmail) await user.updateEmail(novoEmail);
+        if (novaSenha) await user.updatePassword(novaSenha);
+        alert("Dados atualizados com sucesso!");
+    } catch (error) {
+        alert("Erro ao atualizar: " + error.message);
+    }
+}
+function abrirDetalhesFilme(filme) {
+    // Esconde a home e mostra os detalhes
+    document.getElementById('home-page').classList.add('hidden');
+    document.getElementById('details-page').classList.remove('hidden');
+    
+    // Altera o título da aba do navegador
+    document.title = filme.nome; 
+    
+    // Preenche a página
+    document.getElementById('movie-details-content').innerHTML = `
+        <h1>${filme.nome}</h1>
+        <p>${filme.descricao}</p>
+    `;
+    
+    // Configura o botão de Play para o link do Streamtape
+    document.getElementById('btn-play').onclick = () => iniciarPlayer(filme.urlStreamtape);
+}
