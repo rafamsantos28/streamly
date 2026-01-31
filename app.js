@@ -152,3 +152,42 @@ async function checkProfiles() {
         renderProfiles(snapshot);
     }
 }
+// Exemplo da tua base de dados de filmes
+const meusFilmes = [
+    { id: 1, nome: "Avatar: O Caminho da Água", categoria: "Ficção", img: "url_capa.jpg", stream: "link_streamtape" },
+    { id: 2, nome: "O Rei Leão", categoria: "Animação", img: "url_capa2.jpg", stream: "link_streamtape2" }
+];
+
+const searchInput = document.querySelector('.search-bar input');
+
+searchInput.addEventListener('input', (e) => {
+    const termo = e.target.value.toLowerCase();
+    
+    const filmesFiltrados = meusFilmes.filter(filme => {
+        return filme.nome.toLowerCase().includes(termo);
+    });
+
+    renderizarFilmes(filmesFiltrados);
+});
+
+function renderizarFilmes(lista) {
+    const container = document.getElementById('movie-list');
+    container.innerHTML = ""; // Limpa a grade atual
+
+    if (lista.length === 0) {
+        container.innerHTML = "<p>Nenhum filme encontrado...</p>";
+        return;
+    }
+
+    lista.forEach(filme => {
+        const card = `
+            <div class="movie-card" onclick="abrirDetalhesFilme(${JSON.stringify(filme).replace(/"/g, '&quot;')})">
+                <img src="${filme.img}" alt="${filme.nome}">
+                <div class="movie-info">
+                    <h4>${filme.nome}</h4>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', card);
+    });
+}
