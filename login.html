@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamly+ - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #4E67B1 0%, #3d4f8a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #FFFFFF;
+        }
+
+        .login-container {
+            background-color: rgba(61, 79, 138, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 50px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo img {
+            max-width: 150px;
+            height: auto;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            color: #BC872E;
+            margin-top: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: #BC872E;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #FFFFFF;
+            font-weight: 400;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #BC872E;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #4E67B1;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 10px rgba(188, 135, 46, 0.5);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background-color: #BC872E;
+            color: #4E67B1;
+            padding: 12px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: #d49a3a;
+            transform: translateY(-3px);
+        }
+
+        .submit-btn:disabled {
+            background-color: #888888;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            display: none;
+            background-color: rgba(244, 67, 54, 0.2);
+            border: 2px solid #f44336;
+            color: #FFFFFF;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            display: none;
+            background-color: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            color: #FFFFFF;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .toggle-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #FFFFFF;
+            font-size: 14px;
+        }
+
+        .toggle-link a {
+            color: #BC872E;
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-link a:hover {
+            color: #d49a3a;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .logo-text {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <img src="logo.png" alt="Streamly+ Logo">
+            <div class="logo-text">STREAMLY+</div>
+        </div>
+
+        <h1>Bem-vindo</h1>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="teu@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Palavra-passe</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Entrar</button>
+        </form>
+
+        <div class="toggle-link">
+            Não tens conta? <a onclick="toggleForm()">Cria uma aqui</a>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/api.js"></script>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                showError('Por favor preenche todos os campos');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'A entrar...';
+
+            try {
+                await streamlyAuth.login(email, password);
+                showSuccess('Login realizado com sucesso!');
+                setTimeout(() => {
+                    window.location.href = '/inicio.html';
+                }, 1500);
+            } catch (error) {
+                let errorMsg = 'Erro ao fazer login';
+                if (error.code === 'auth/user-not-found') {
+                    errorMsg = 'Utilizador não encontrado';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMsg = 'Palavra-passe incorreta';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMsg = 'Email inválido';
+                }
+                showError(errorMsg);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Entrar';
+            }
+        });
+
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorMessage.classList.add('show');
+            setTimeout(() => {
+                errorMessage.classList.remove('show');
+            }, 5000);
+        }
+
+        function showSuccess(msg) {
+            successMessage.textContent = msg;
+            successMessage.classList.add('show');
+        }
+
+        function toggleForm() {
+            window.location.href = '/registo.html';
+        }
+    </script>
+</body>
+</html>
