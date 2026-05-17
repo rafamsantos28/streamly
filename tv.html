@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamly+ - Emparelhamento TV</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #4E67B1 0%, #3d4f8a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #FFFFFF;
+            padding: 20px;
+        }
+
+        .tv-pairing-container {
+            background-color: rgba(61, 79, 138, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 50px;
+            border-radius: 10px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo img {
+            max-width: 120px;
+            height: auto;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #BC872E;
+            margin-top: 15px;
+        }
+
+        .tv-icon {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            color: #BC872E;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #FFFFFF;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #FFFFFF;
+            font-weight: 400;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #BC872E;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #4E67B1;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        input#codigoTV {
+            letter-spacing: 4px;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        input:focus {
+            outline: none;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 10px rgba(188, 135, 46, 0.5);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background-color: #BC872E;
+            color: #4E67B1;
+            padding: 12px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: #d49a3a;
+            transform: translateY(-3px);
+        }
+
+        .submit-btn:disabled {
+            background-color: #888888;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            display: none;
+            background-color: rgba(244, 67, 54, 0.2);
+            border: 2px solid #f44336;
+            color: #FFFFFF;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .success-message {
+            display: none;
+            background-color: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            color: #FFFFFF;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .info-box {
+            background-color: rgba(188, 135, 46, 0.1);
+            border-left: 3px solid #BC872E;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: #FFFFFF;
+        }
+
+        .info-box strong {
+            color: #BC872E;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 30px 0 20px 0;
+            font-size: 12px;
+            color: #FFFFFF;
+            opacity: 0.5;
+        }
+
+        .toggle-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #FFFFFF;
+            font-size: 14px;
+        }
+
+        .toggle-link a {
+            color: #BC872E;
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-link a:hover {
+            color: #d49a3a;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #BC872E;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .tv-pairing-container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .logo-text {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tv-pairing-container">
+        <div class="logo">
+            <img src="logo.png" alt="Streamly+ Logo">
+            <div class="logo-text">STREAMLY+</div>
+        </div>
+
+        <div class="tv-icon">📺</div>
+
+        <h1>Emparelhamento da TV</h1>
+        <p class="subtitle">Faz login e introduz o código que vês na tua TV</p>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <div class="info-box">
+            <strong>ℹ️ Como funciona:</strong><br>
+            1. Vê o código de 6 caracteres na tua TV<br>
+            2. Faz login na tua conta<br>
+            3. Introduz o código acima<br>
+            4. Pronto! A TV está emparelhada
+        </div>
+
+        <form id="tvPairingForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="teu@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Palavra-passe</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••">
+            </div>
+
+            <div class="divider">OU</div>
+
+            <div class="form-group">
+                <label for="codigoTV">Código da TV</label>
+                <input type="text" id="codigoTV" name="codigoTV" maxlength="6" required placeholder="Ex: XJ42AB" pattern="[A-Z0-9]{6}">
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Emparelhar TV</button>
+        </form>
+
+        <div class="toggle-link">
+            Preferes fazer login primeiro? <a onclick="goToLogin()">Clica aqui</a>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/tv.js"></script>
+
+    <script>
+        const tvPairingForm = document.getElementById('tvPairingForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const codigoTVInput = document.getElementById('codigoTV');
+
+        // Auto-maiúsculas no código
+        codigoTVInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        tvPairingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const codigoTV = codigoTVInput.value.toUpperCase().trim();
+
+            if (!email || !password) {
+                showError('Por favor preenche email e palavra-passe');
+                return;
+            }
+
+            if (!codigoTV || codigoTV.length !== 6) {
+                showError('Por favor introduz um código válido (6 caracteres)');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'A emparelhar...';
+            hideMessages();
+
+            try {
+                // 1. Fazer login
+                const user = await streamlyAuth.login(email, password);
+                streamlyDatabase.setUserId(user.uid);
+
+                // 2. Validar código de TV
+                const pairingData = await streamlyTV.validatePairingCode(codigoTV);
+
+                if (!pairingData) {
+                    throw new Error('Código inválido ou expirado');
+                }
+
+                // 3. Associar utilizador ao código
+                await streamlyTV.completePairing(codigoTV, user.uid);
+
+                // 4. Redirecionar para página de sucesso
+                showSuccess('Emparelhamento concluído com sucesso!');
+                setTimeout(() => {
+                    window.location.href = `/tv-sucesso.html?codigo=${codigoTV}`;
+                }, 1500);
+
+            } catch (error) {
+                let errorMsg = 'Erro ao emparelhar';
+                if (error.code === 'auth/user-not-found') {
+                    errorMsg = 'Utilizador não encontrado';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMsg = 'Palavra-passe incorreta';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMsg = 'Email inválido';
+                } else if (error.message === 'Código inválido ou expirado') {
+                    errorMsg = 'Código inválido ou expirado. Verifica o código na TV';
+                }
+                showError(errorMsg);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Emparelhar TV';
+            }
+        });
+
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorMessage.classList.add('show');
+        }
+
+        function showSuccess(msg) {
+            successMessage.textContent = msg;
+            successMessage.classList.add('show');
+        }
+
+        function hideMessages() {
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+        }
+
+        function goToLogin() {
+            window.location.href = '/login.html';
+        }
+    </script>
+</body>
+</html>
